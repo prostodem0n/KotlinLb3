@@ -1,84 +1,83 @@
 import kotlinx.coroutines.*
 
-// Student class
 class Student private constructor(
     private var _name: String,
     private var _age: Int,
     private var _grades: MutableList<Int>
 ) {
     init {
-        println("Student created: ${_name}, age: ${_age}")
+        println("Створено студента: ${_name}, вік: ${_age}")
     }
 
-    // Secondary constructor: only name
+    // Вторинний конструктор: тільки ім'я
     constructor(name: String) : this(name, 18, mutableListOf())
 
-    // Property name: trims whitespace and capitalizes first letter
+    // Властивість ім'я: обрізає пробіли та робить першу літеру великою
     var name: String
         get() = _name
         set(value) {
             _name = value.trim().replaceFirstChar { it.uppercase() }
         }
 
-    // Property age: only set if ≥ 0
+    // Властивість вік: встановлюється лише якщо ≥ 0
     var age: Int
         get() = _age
         set(value) {
             if (value >= 0) {
                 _age = value
             } else {
-                println("Error: age cannot be negative")
+                println("Помилка: вік не може бути від'ємним")
             }
         }
 
-    // Property grades
+    // Властивість оцінки
     var grades: List<Int>
-        get() = _grades.toList() // Return a copy of the list for encapsulation
+        get() = _grades.toList() // Повертає копію списку для інкапсуляції
         private set(value) {
             _grades = value.toMutableList()
         }
 
-    // isAdult: Boolean — property with getter
+    // isAdult: Boolean — властивість з геттером
     val isAdult: Boolean
         get() = _age >= 18
 
-    // status: String — property with by lazy
+    // status: String — властивість з by lazy
     val status: String by lazy {
-        if (isAdult) "Adult" else "Minor"
+        if (isAdult) "Дорослий" else "Неповнолітній"
     }
 
-    // Function getAverage(): returns average grade
+    // Функція getAverage(): повертає середній бал
     fun getAverage(): Double {
         if (_grades.isEmpty()) return 0.0
         return _grades.average()
     }
 
-    // Function processGrades(operation: (Int) -> Int): modifies all grades according to the passed function
+    // Функція processGrades(operation: (Int) -> Int): змінює всі оцінки згідно з переданою функцією
     fun processGrades(operation: (Int) -> Int) {
         _grades = _grades.map { operation(it) }.toMutableList()
     }
 
-    // Function updateGrades(grades: List<Int>): updates grades
+    // Функція updateGrades(grades: List<Int>): оновлює оцінки
     fun updateGrades(grades: List<Int>) {
         _grades.clear()
         _grades.addAll(grades)
-        println("Grades updated for student $name: ${_grades.joinToString()}")
+        println("Оцінки оновлено для студента $name: ${_grades.joinToString()}")
     }
 
-    // Operator overloading
-    // «+» — combines grades of two students
+    // Перевантаження операторів
+    // «+» — об'єднує оцінки двох студентів
     operator fun plus(other: Student): Student {
         val combinedGrades = this._grades + other._grades
         return Student(this._name, this._age, combinedGrades.toMutableList())
     }
 
-    // «*» — multiplies all grades by a number
+    // «*» — множить всі оцінки на число
     operator fun times(multiplier: Int): Student {
         val newGrades = _grades.map { it * multiplier }.toMutableList()
         return Student(this._name, this._age, newGrades)
     }
 
-    // «==» — compares students by name and average grade
+    // «==» — порівнює студентів за ім'ям та середнім балом
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Student) return false
@@ -92,106 +91,106 @@ class Student private constructor(
     }
 
     override fun toString(): String {
-        return "Student(name='$_name', age=$_age, grades=${_grades.joinToString()}, average=${getAverage()}, isAdult=$isAdult)"
+        return "Student(ім'я='$_name', вік=$_age, оцінки=${_grades.joinToString()}, середній бал=${getAverage()}, повнолітній=$isAdult)"
     }
 }
 
-// Group class
+// Клас Group
 class Group(vararg val students: Student) {
-    // operator fun get(index: Int): allows access to students by index
+    // operator fun get(index: Int): дозволяє звертатись до студентів за індексом
     operator fun get(index: Int): Student {
         return students[index]
     }
 
-    // Function getTopStudent(): returns student with highest average grade
+    // Функція getTopStudent(): повертає студента з найвищим середнім балом
     fun getTopStudent(): Student? {
         if (students.isEmpty()) return null
         return students.maxByOrNull { it.getAverage() }
     }
 
     override fun toString(): String {
-        return "Group(students=${students.joinToString("\n")})"
+        return "Group(студенти=${students.joinToString("\n")})"
     }
 }
 
-// Asynchronous logic
+// Асинхронна логіка
 suspend fun fetchGradesFromServer(): List<Int> {
-    println("Fetching grades from server...")
-    delay(2000) // simulating server request
+    println("Отримання оцінок з сервера...")
+    delay(2000) // імітація запиту до сервера
     val grades = listOf(85, 90, 78, 92, 88)
-    println("Grades received from server: ${grades.joinToString()}")
+    println("Отримано оцінки з сервера: ${grades.joinToString()}")
     return grades
 }
 
 fun main() = runBlocking {
-    println("===== Student Grading System =====")
+    println("===== Система оцінювання студентів =====")
 
-    // Creating students
-    val student1 = Student("ivan petrenko")
-    student1.age = 20  // Changing age after creation
+    // Створення студентів
+    val student1 = Student("Іван Петренко")
+    student1.age = 20  // Зміна віку після створення
     student1.updateGrades(listOf(75, 82, 90, 68))
 
-    println("\n--- Student Information ---")
+    println("\n--- Інформація про студента ---")
     println(student1)
 
-    // Using lazy property
-    println("Student status: ${student1.status}")
+    // Використання lazy властивості
+    println("Статус студента: ${student1.status}")
     println()
 
-    // Secondary constructor + named arguments
-    val student2 = Student("maria").apply {
+    // Вторинний конструктор + іменовані аргументи
+    val student2 = Student(name = "Марія").apply {
         age = 17
         updateGrades(listOf(95, 88, 92, 90))
     }
 
-    println("\n--- Second Student Information ---")
+    println("\n--- Інформація про другого студента ---")
     println(student2)
-    println("Student status: ${student2.status}")
+    println("Статус студента: ${student2.status}")
 
-    // Using overloaded operators
-    println("\n--- Operators Demonstration ---")
+    // Використання перевантажених операторів
+    println("\n--- Демонстрація операторів ---")
     val combinedStudent = student1 + student2
-    println("Combined student (student1 + student2): $combinedStudent")
+    println("Об'єднаний студент (student1 + student2): $combinedStudent")
     println()
 
     val multipliedStudent = student1 * 2
-    println("Student with doubled grades (student1 * 2): $multipliedStudent")
+    println("Студент з подвоєними оцінками (student1 * 2): $multipliedStudent")
     println()
 
     println("student1 == student2: ${student1 == student2}")
 
-    // Using processGrades with lambda function
-    println("\n--- Grades Processing ---")
+    // Використання processGrades з лямбда-функцією
+    println("\n--- Обробка оцінок ---")
     val originalGrades = student1.grades
-    println("Original grades: ${originalGrades.joinToString()}")
+    println("Початкові оцінки: ${originalGrades.joinToString()}")
     println()
 
     student1.processGrades { grade -> grade + 5 }
-    println("Grades after adding 5 points: ${student1.grades.joinToString()}")
+    println("Оцінки після додавання 5 балів: ${student1.grades.joinToString()}")
     println()
 
-    // Creating a group
-    val student3 = Student("alexander").apply {
+    // Створення групи
+    val student3 = Student("олександр").apply {
         age = 20
         updateGrades(listOf(78, 85, 92, 88))
     }
 
-    println("\n--- Student Group ---")
+    println("\n--- Група студентів ---")
     val group = Group(student1, student2, student3)
-    println("Student with index 1: ${group[1]}")
-    println("Student with highest average grade: ${group.getTopStudent()}")
+    println("Студент з індексом 1: ${group[1]}")
+    println("Студент з найвищим середнім балом: ${group.getTopStudent()}")
 
-    // Asynchronous grade update
-    println("\n--- Asynchronous Grade Update ---")
+    // Асинхронне оновлення оцінок
+    println("\n--- Асинхронне оновлення оцінок ---")
 
     val fetchedGrades = async { fetchGradesFromServer() }
-    println("Waiting for grades...")
+    println("Очікування оцінок...")
 
     val newGrades = fetchedGrades.await()
-    println("Grades received, updating data...")
+    println("Отримано оцінки, оновлення даних...")
 
     student3.updateGrades(newGrades)
-    println("Updated student information: $student3")
+    println("Оновлена інформація про студента: $student3")
 
-    println("\n===== Program Completed =====")
+    println("\n===== Програма завершена =====")
 }
